@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>One Vision | Maintenance Order Assistant</title>
+<style>
+  :root{
+    --navy:#f5f8fc;
+    --navy-2:#eaf0fb;
+    --panel:rgba(255,255,255,.70);
+    --line: rgba(10,25,60,.10);
+    --text:#0f1b33;
+    --muted:#5b6478;
+    --sap-blue:#0070f2;
+    --sap-blue-dark:#003f8c;
+    --joule:#4f46e5;
+    --joule-2:#9b2fd6;
+    --cap:#059669;
+    --sac:#0284c7;
+    --gold:#0d9488;
+    --danger:#e11d48;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    font-family:"Segoe UI", "Inter", system-ui, -apple-system, sans-serif;
+    background:var(--navy);
+    color:var(--text);
+    overflow-x:hidden;
+    position:relative;
+  }
+  /* Premium dot-grid + grain + vignette backdrop, fixed behind all sections.
+     Color is intentionally scoped to individual sections below, not spread globally. */
+  .brand-pattern{
+    position:fixed; inset:0; z-index:-1; pointer-events:none;
+    background-repeat:no-repeat;
+  }
+  .brand-pattern.p1{
+    background-image:url('srv/assets/logo/Layer_6.png');
+    background-size:1500px auto; background-position:-140px -60px;
+    opacity:.065;
+  }
+  .brand-pattern.p2{
+    background-image:url('srv/assets/logo/Layer_5.png');
+    background-size:1400px auto; background-position:right -180px bottom -140px;
+    opacity:.06;
+  }
+  .brand-pattern.p3{
+    background-image:url('srv/assets/logo/Color=Teal, Shade=6.png');
+    background-size:640px auto; background-position:right -80px top 30%;
+    opacity:.05; transform:rotate(-8deg);
+  }
+  .grain{
+    position:fixed; inset:0; z-index:-1; pointer-events:none; opacity:.045; mix-blend-mode:multiply;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size:150px 150px;
+  }
+  body::before{
+    content:""; position:fixed; inset:0; z-index:-1; pointer-events:none;
+    background-image:radial-gradient(rgba(10,25,60,.14) 1.4px, transparent 1.4px);
+    background-size:28px 28px;
+    mask-image:radial-gradient(circle at 50% 20%, rgba(0,0,0,.85), transparent 78%);
+  }
+  body::after{
+    content:""; position:fixed; inset:0; z-index:-1; pointer-events:none;
+    background:radial-gradient(ellipse at 50% 0%, transparent 45%, rgba(140,160,210,.22) 100%);
+  }
+  section{
+    min-height:100vh;
+    width:100%;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    padding:80px 8vw;
+    position:relative;
+    scroll-margin-top:0;
+  }
+  .bg-glow{
+    position:absolute; inset:0; z-index:-1; overflow:hidden; pointer-events:none;
+  }
+  .bg-glow span{
+    position:absolute; border-radius:50%; filter:blur(120px); opacity:.18;
+  }
+  .glow-blue{width:520px;height:520px; background:var(--sap-blue); top:-160px; left:-120px;}
+  .glow-purple{width:460px;height:460px; background:var(--joule); bottom:-160px; right:-100px;}
+  .glow-green{width:420px;height:420px; background:var(--cap); top:40%; right:20%;}
+
+  .content{position:relative; width:100%; max-width:1180px; margin:0 auto;}
+  .eyebrow{
+    display:inline-flex; align-items:center; gap:8px;
+    text-transform:uppercase; letter-spacing:3px; font-size:12px; font-weight:700;
+    color:var(--gold); margin-bottom:18px;
+  }
+  .eyebrow::before{content:""; width:28px; height:2px; background:var(--gold); display:inline-block;}
+  h1{font-size:clamp(2.4rem, 5vw, 4.2rem); line-height:1.08; margin:0 0 20px; font-weight:800; letter-spacing:-1px;}
+  h2{font-size:clamp(2rem, 4vw, 3rem); margin:0 0 22px; font-weight:800; letter-spacing:-.5px;}
+  h2 span, h1 span{
+    background:linear-gradient(90deg,var(--sap-blue),var(--joule) 55%, var(--joule-2));
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  p.lead{font-size:1.2rem; color:var(--muted); max-width:760px; line-height:1.7;}
+  .badge{
+    display:inline-block; padding:6px 14px; border-radius:999px; font-size:12px; font-weight:700;
+    border:1px solid var(--line); color:var(--muted); letter-spacing:1px; text-transform:uppercase;
+  }
+
+  /* Frosted-glass panels: mesh shows through with a soft blur */
+  .story-card, .card, .stack-card, .weight-card, .stat, .member{
+    backdrop-filter:blur(18px) saturate(180%);
+    -webkit-backdrop-filter:blur(18px) saturate(180%);
+  }
+
+  /* NAV DOTS */
+  nav.dots{
+    position:fixed; right:26px; top:50%; transform:translateY(-50%); z-index:50;
+    display:flex; flex-direction:column; gap:14px;
+  }
+  nav.dots::before{
+    content:""; position:absolute; left:50%; top:-4px; bottom:-4px; width:2px; transform:translateX(-50%);
+    background:rgba(10,25,60,.14); border-radius:2px;
+  }
+  .dots-fill{
+    position:absolute; left:50%; top:-4px; width:3px; height:0%; transform:translateX(-50%);
+    background:linear-gradient(180deg,var(--sap-blue),var(--joule)); border-radius:2px;
+    transition:height .12s linear; box-shadow:0 0 8px rgba(0,112,242,.4);
+  }
+  nav.dots a{
+    width:10px; height:10px; border-radius:50%; background:rgba(10,25,60,.18);
+    border:1px solid rgba(10,25,60,.22); transition:.25s; position:relative;
+  }
+  nav.dots a.active{ background:var(--gold); border-color:var(--gold); transform:scale(1.3);}
+  nav.dots a::after{
+    content: attr(data-label); position:absolute; right:22px; top:50%; transform:translateY(-50%);
+    font-size:11px; color:var(--muted); white-space:nowrap; opacity:0; transition:.2s; pointer-events:none;
+  }
+  nav.dots a:hover::after{opacity:1;}
+
+  /* progress marker: travels down the nav-dots track instead of a top bar */
+  .progress-marker{
+    position:fixed; top:0; left:0; width:24px; height:24px; z-index:61;
+    transform:translate(-50%,-50%); transition:top .12s linear; opacity:0;
+  }
+  .progress-marker.show{opacity:1;}
+  .progress-marker img{width:100%; height:100%; object-fit:contain; display:block; filter:drop-shadow(0 3px 8px rgba(0,112,242,.55));}
+
+  /* COVER */
+  #cover{background:radial-gradient(circle at 20% 20%, rgba(228,236,251,.65) 0%, transparent 62%);}
+  .logo-mark{
+    display:flex; align-items:center; gap:14px; margin-bottom:36px;
+  }
+  .logo-circle{
+    height:52px; display:flex; align-items:center; justify-content:center;
+  }
+  .logo-circle img{height:100%; width:auto; object-fit:contain;}
+  .logo-circle.xl{height:92px; margin:0 auto 22px;}
+
+  /* SAP BRAND CHIP */
+  .sap-chip{
+    display:inline-flex; align-items:center; gap:10px; padding:6px 14px 6px 6px; border-radius:12px;
+    background:rgba(255,255,255,.75); border:1px solid var(--line); box-shadow:0 4px 14px rgba(10,30,80,.06);
+    backdrop-filter:blur(14px) saturate(180%); -webkit-backdrop-filter:blur(14px) saturate(180%);
+  }
+  .sap-chip .mark{
+    width:40px;height:40px;border-radius:8px; background:#ffffff;
+    display:flex; align-items:center; justify-content:center; overflow:hidden; padding:5px;
+    box-shadow:0 2px 8px rgba(10,30,80,.12); border:1px solid var(--line);
+  }
+  .sap-chip .mark img{width:100%; height:100%; object-fit:contain;}
+  .sap-chip .label{font-size:11.5px; color:var(--muted); font-weight:600; letter-spacing:.3px;}
+  .sap-chip.lg{padding:9px 20px 9px 9px; gap:14px;}
+  .sap-chip.lg .mark{width:56px;height:56px;font-size:15px;border-radius:12px;padding:7px;}
+  .sap-chip.lg .label{font-size:14px;}
+
+  /* JOULE IN ACTION - calm background inspired by the Joule mark */
+  #joule{position:relative; overflow:hidden;}
+  #joule::before{
+    content:""; position:absolute; top:-15%; right:-12%; width:65%; height:130%; z-index:-1;
+    background-image:url('srv/assets/joule.jpg'); background-size:cover; background-position:center;
+    opacity:.08; filter:blur(3px) saturate(120%); border-radius:50%;
+    mask-image:radial-gradient(circle at 70% 50%, rgba(0,0,0,.9), transparent 70%);
+    -webkit-mask-image:radial-gradient(circle at 70% 50%, rgba(0,0,0,.9), transparent 70%);
+  }
+
+  /* Service icon badges for BTP / CAP / SAC (simple glyphs, not literal product logos) */
+  .svc-icon{
+    width:44px; height:44px; border-radius:11px; display:flex; align-items:center; justify-content:center;
+    margin-bottom:16px; flex-shrink:0;
+  }
+  .svc-icon svg{width:22px; height:22px;}
+  .svc-btp{background:rgba(0,112,242,.12); color:var(--sap-blue);}
+  .svc-cap{background:rgba(5,150,105,.12); color:var(--cap);}
+  .svc-sac{background:rgba(2,132,199,.12); color:var(--sac);}
+  .svc-joule{background:rgba(79,70,229,.12); color:var(--joule);}
+
+  #sapFloat{
+    position:fixed; left:26px; bottom:26px; z-index:55;
+    opacity:0; transform:translateY(14px) scale(.85) rotate(-6deg); transition:opacity .6s cubic-bezier(.34,1.56,.64,1), transform .6s cubic-bezier(.34,1.56,.64,1);
+  }
+  #sapFloat.show{opacity:1; transform:translateY(0) scale(1) rotate(0deg);}
+  #sapFloat:hover{transform:translateY(-4px) scale(1.04);}
+
+  /* SAP "stamp" entrance used for brand badges at key story beats */
+  .reveal-stamp{
+    opacity:0; transform:scale(.4) rotate(-10deg);
+    transition:opacity .7s cubic-bezier(.34,1.56,.64,1), transform .7s cubic-bezier(.34,1.56,.64,1);
+  }
+  .reveal-stamp.visible{opacity:1; transform:scale(1) rotate(0deg);}
+  .logo-text{font-weight:800; font-size:20px; letter-spacing:1px;}
+  .logo-text small{display:block; font-weight:500; font-size:11px; letter-spacing:2px; color:var(--muted); text-transform:uppercase;}
+  .cover-meta{
+    display:grid; grid-template-columns:repeat(5,1fr); margin-top:44px; width:100%; max-width:1080px;
+    border:1px solid var(--line); border-radius:16px; overflow:hidden;
+    background:rgba(255,255,255,.55); box-shadow:0 14px 34px rgba(10,30,80,.06);
+    backdrop-filter:blur(14px) saturate(180%); -webkit-backdrop-filter:blur(14px) saturate(180%);
+  }
+  @media (max-width:900px){
+    .cover-meta{grid-template-columns:repeat(2,1fr);}
+    .meta-item:nth-child(2n+1){border-left:none;}
+    .meta-item:nth-child(n+3){border-top:1px solid var(--line);}
+  }
+  @media (max-width:540px){
+    .cover-meta{grid-template-columns:1fr;}
+    .meta-item{border-left:none !important;}
+    .meta-item:not(:first-child){border-top:1px solid var(--line);}
+  }
+  .meta-item{
+    padding:20px 18px; display:flex; flex-direction:column; gap:10px; align-items:flex-start;
+    border-left:1px solid var(--line);
+  }
+  .meta-item:first-child{border-left:none;}
+  .meta-icon{
+    width:34px; height:34px; border-radius:9px; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .meta-icon svg{width:17px; height:17px;}
+  .meta-icon.m-team{background:rgba(0,112,242,.10); color:var(--sap-blue);}
+  .meta-icon.m-built{background:rgba(79,70,229,.10); color:var(--joule);}
+  .meta-icon.m-domain{background:rgba(2,132,199,.10); color:var(--sac);}
+  .meta-icon.m-org{background:rgba(5,150,105,.10); color:var(--cap);}
+  .meta-icon.m-date{background:rgba(13,148,136,.10); color:var(--gold);}
+  .meta-text strong{display:block; font-size:10.5px; letter-spacing:1px; text-transform:uppercase; color:var(--muted); font-weight:700; margin-bottom:3px;}
+  .meta-text span{display:block; font-size:13.5px; color:var(--text); font-weight:600; line-height:1.4;}
+  .scroll-cue{
+    position:absolute; bottom:36px; left:50%; transform:translateX(-50%);
+    font-size:12px; color:var(--muted); text-align:center; letter-spacing:2px; text-transform:uppercase;
+  }
+  .scroll-cue .chevron{margin-top:8px; animation:bounce 1.6s infinite;}
+  @keyframes bounce{0%,100%{transform:translateY(0);}50%{transform:translateY(8px);}}
+
+  /* STORY */
+  #story{background:rgba(234,240,251,.55);}
+  .story-split{display:grid; grid-template-columns:1.1fr .9fr; gap:40px; width:100%; align-items:stretch;}
+  @media (max-width:940px){.story-split{grid-template-columns:1fr;}}
+  .story-card{
+    background:var(--panel); border:1px solid var(--line); border-radius:20px; padding:40px;
+    box-shadow:0 30px 60px rgba(10,30,80,.10); display:flex; flex-direction:column; justify-content:center;
+  }
+  .story-card p{font-size:1.08rem; line-height:1.85; color:#33415c; margin:0 0 16px;}
+  .story-card p:last-child{margin-bottom:0;}
+  .story-highlight{color:var(--gold); font-weight:700;}
+
+  /* Cinematic "control room" visual - real video optional, CSS mockup as guaranteed fallback */
+  .console-frame{
+    position:relative; border-radius:20px; overflow:hidden; min-height:340px; height:100%;
+    background:linear-gradient(155deg,#0b1424,#050912); border:1px solid rgba(255,255,255,.06);
+    box-shadow:0 30px 70px rgba(5,10,25,.45);
+  }
+  .console-frame video{width:100%; height:100%; object-fit:cover; display:block;}
+  .console{
+    position:absolute; inset:0; padding:26px; font-family:"Consolas",monospace; color:#cfe0ff;
+    display:flex; flex-direction:column; gap:14px;
+    background:radial-gradient(circle at 30% 0%, rgba(0,112,242,.18), transparent 55%);
+  }
+  .console::before{
+    content:""; position:absolute; inset:0; pointer-events:none; opacity:.5;
+    background:repeating-linear-gradient(0deg, rgba(255,255,255,.035) 0px, rgba(255,255,255,.035) 1px, transparent 1px, transparent 3px);
+  }
+  .console-clock{font-size:2.6rem; font-weight:800; letter-spacing:1px; color:#e8f0ff;}
+  .console-clock .ampm{font-size:1rem; color:#6f86b8; margin-left:8px; font-weight:600;}
+  .console-sub{font-size:.72rem; letter-spacing:2px; color:#5b7ab0; text-transform:uppercase; margin-top:-10px;}
+  .console-row{
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    font-size:.82rem; padding:9px 12px; border-radius:8px; background:rgba(255,255,255,.03);
+    border:1px solid rgba(255,255,255,.05);
+  }
+  .console-row .tag{font-size:.62rem; letter-spacing:1px; padding:3px 8px; border-radius:999px; background:rgba(255,255,255,.06); color:#8fa5d6;}
+  .console-row .tag.muted{opacity:.7;}
+  .console-row.alert{
+    background:rgba(225,29,72,.14); border-color:rgba(225,29,72,.35);
+    animation:consoleAlert 1.8s ease-in-out infinite;
+  }
+  .console-row.alert .tag{background:var(--danger); color:#fff;}
+  .console-row .dot{width:8px;height:8px;border-radius:50%; background:var(--danger); flex-shrink:0; box-shadow:0 0 0 0 rgba(225,29,72,.6); animation:dotPing 1.8s ease-in-out infinite;}
+  @keyframes dotPing{0%{box-shadow:0 0 0 0 rgba(225,29,72,.55);}70%{box-shadow:0 0 0 8px rgba(225,29,72,0);}100%{box-shadow:0 0 0 0 rgba(225,29,72,0);}}
+  @keyframes consoleAlert{0%,100%{background:rgba(225,29,72,.14);}50%{background:rgba(225,29,72,.24);}}
+  .console-footer{margin-top:auto; font-size:.68rem; letter-spacing:1px; color:#5b7ab0; text-transform:uppercase; padding-top:10px; border-top:1px solid rgba(255,255,255,.06);}
+
+  /* PROBLEM / SOLUTION grid */
+  .split{display:grid; grid-template-columns:1fr 1fr; gap:40px; width:100%;}
+  @media (max-width:900px){.split{grid-template-columns:1fr;}}
+  .card{
+    background:var(--panel); border:1px solid var(--line); border-radius:18px; padding:30px;
+    transition:.25s; box-shadow:0 10px 30px rgba(10,30,80,.06);
+  }
+  .card:hover{transform:translateY(-6px); border-color:rgba(10,25,60,.22); box-shadow:0 20px 40px rgba(10,30,80,.10);}
+  .card h3{margin:0 0 10px; font-size:1.15rem;}
+  .card p{margin:0; color:var(--muted); font-size:.95rem; line-height:1.6;}
+  .icon-chip{
+    width:44px;height:44px;border-radius:12px; display:flex;align-items:center;justify-content:center;
+    font-size:20px; margin-bottom:16px;
+  }
+  .chip-danger{background:rgba(225,29,72,.12); color:var(--danger);}
+  .chip-gold{background:rgba(5,150,105,.12); color:var(--gold);}
+  .chip-blue{background:rgba(0,112,242,.12); color:var(--sap-blue);}
+  .chip-green{background:rgba(5,150,105,.12); color:var(--cap);}
+  .chip-purple{background:rgba(124,58,237,.12); color:var(--joule);}
+
+  .pill-row{display:flex; gap:12px; flex-wrap:wrap; margin-top:28px;}
+  .pill{
+    padding:8px 16px; border-radius:999px; font-size:13px; font-weight:600;
+    border:1px solid var(--line); background:rgba(255,255,255,.65); color:var(--text);
+    backdrop-filter:blur(14px) saturate(180%); -webkit-backdrop-filter:blur(14px) saturate(180%);
+  }
+
+  /* HOW IT WORKS */
+  .formula-box{
+    background:#0f1b33; border:1px solid var(--line); border-radius:18px; padding:34px;
+    font-family: "Consolas", monospace; font-size:1.05rem; color:#bcd3ff; line-height:2;
+    margin-bottom:34px; overflow-x:auto;
+  }
+  .formula-box .kw{color:var(--gold);}
+  .weights{display:grid; grid-template-columns:repeat(3,1fr); gap:20px; width:100%;}
+  @media (max-width:800px){.weights{grid-template-columns:1fr;}}
+  .weight-card{
+    background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:24px; text-align:center;
+    box-shadow:0 10px 26px rgba(10,30,80,.06);
+  }
+  .weight-card .num{font-size:2.4rem; font-weight:800; background:linear-gradient(90deg,var(--sap-blue),var(--joule)); -webkit-background-clip:text; background-clip:text; color:transparent;}
+  .weight-card .label{font-size:.85rem; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-top:6px;}
+
+  /* ARCHITECTURE */
+  .arch-frame{
+    width:100%; border-radius:18px; border:1px solid var(--line); background:#fff; padding:18px;
+    box-shadow:0 30px 60px rgba(10,30,80,.12);
+  }
+  .arch-frame img{width:100%; display:block; border-radius:10px;}
+
+  /* TECH STACK */
+  #stack{background:radial-gradient(900px circle at 50% 0%, rgba(0,112,242,.09), transparent 65%);}
+  .stack-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:26px; width:100%;}
+  @media (max-width:900px){.stack-grid{grid-template-columns:1fr;}}
+  .stack-card{
+    border-radius:20px; padding:32px 26px; position:relative; overflow:hidden;
+    border:1px solid var(--line); background:var(--panel); box-shadow:0 14px 34px rgba(10,30,80,.07);
+  }
+  .stack-card::before{content:""; position:absolute; inset:0; opacity:.14;}
+  .stack-cap::before{background:var(--cap);}
+  .stack-joule::before{background:linear-gradient(135deg,var(--joule),var(--joule-2));}
+  .stack-sac::before{background:var(--sac);}
+  .stack-btp::before{background:linear-gradient(135deg,var(--sap-blue),var(--sap-blue-dark));}
+  .tag-btp{background:rgba(0,112,242,.12); color:var(--sap-blue-dark);}
+  .stack-card h3{position:relative; margin:0 0 12px; font-size:1.3rem;}
+  .stack-card p{position:relative; color:var(--muted); font-size:.95rem; line-height:1.65; margin:0;}
+  .stack-tag{
+    position:relative; display:inline-block; margin-top:16px; font-size:11px; font-weight:700;
+    letter-spacing:1px; text-transform:uppercase; padding:5px 12px; border-radius:999px;
+  }
+  .tag-cap{background:rgba(5,150,105,.12); color:#03694a;}
+  .tag-joule{background:rgba(124,58,237,.12); color:#5b21b6;}
+  .tag-sac{background:rgba(2,132,199,.12); color:#075985;}
+
+  /* DEMO / LAPTOP */
+  .laptop{width:100%; max-width:960px; margin:10px auto 0; perspective:1600px;}
+  .laptop .lid{
+    position:relative;
+    background:linear-gradient(155deg,#232f4d,#0d1424 55%,#080c17);
+    border-radius:20px 20px 8px 8px;
+    padding:22px 22px 26px;
+    box-shadow:
+      0 60px 100px -30px rgba(0,0,0,.65),
+      inset 0 0 0 1px rgba(255,255,255,.06),
+      inset 0 1px 0 rgba(255,255,255,.12);
+  }
+  .laptop .cam{
+    position:absolute; top:9px; left:50%; transform:translateX(-50%);
+    width:7px; height:7px; border-radius:50%;
+    background:#050810; box-shadow:0 0 0 3px rgba(255,255,255,.03), inset 0 0 3px rgba(120,170,255,.7);
+  }
+  .laptop .screen{
+    background:#000; border-radius:9px; overflow:hidden; aspect-ratio:16/10; position:relative;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.08), inset 0 0 30px rgba(0,0,0,.5);
+  }
+  .laptop .screen::after{
+    content:""; position:absolute; inset:0; pointer-events:none;
+    background:linear-gradient(120deg, rgba(255,255,255,.06), transparent 30%);
+  }
+  .laptop video, .laptop .placeholder{
+    width:100%; height:100%; object-fit:cover; display:block;
+  }
+  .laptop .placeholder{
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px;
+    color:var(--muted); background:linear-gradient(135deg,#0e1c3a,#08101f); text-align:center; padding:20px;
+  }
+  .laptop .brand-etch{
+    text-align:center; margin-top:14px; font-size:10px; letter-spacing:4px; font-weight:700;
+    color:rgba(255,255,255,.28); text-transform:uppercase;
+  }
+  .laptop .hinge{
+    height:12px; margin:0 6px;
+    background:linear-gradient(#0a0f1c,#05080f 60%,#0a0f1c);
+    position:relative; border-radius:2px;
+    box-shadow:0 -2px 8px rgba(0,0,0,.5) inset;
+  }
+  .laptop .keyboard-deck{
+    height:26px; margin:0 auto;
+    background:linear-gradient(#182238,#0a0f1c 65%);
+    clip-path: polygon(3% 0, 97% 0, 100% 100%, 0% 100%);
+    position:relative;
+    box-shadow:0 30px 50px -18px rgba(0,0,0,.6);
+  }
+  .laptop .trackpad{
+    position:absolute; left:50%; top:4px; transform:translateX(-50%);
+    width:140px; height:6px; border-radius:6px; background:rgba(255,255,255,.05);
+  }
+  .laptop-shadow{
+    width:64%; height:28px; margin:16px auto 0; border-radius:50%;
+    background:radial-gradient(ellipse at center, rgba(0,0,0,.55), transparent 72%);
+    filter:blur(3px);
+  }
+  .demo-caption{text-align:center; margin-top:22px; color:var(--muted); font-size:.95rem;}
+
+  /* JOULE / SAC SCREENSHOTS */
+  .shot-frame{
+    border-radius:18px; overflow:hidden; border:1px solid var(--line);
+    box-shadow:0 30px 60px rgba(10,30,80,.14); max-width:760px; margin:0 auto;
+  }
+  .shot-frame img{width:100%; display:block;}
+  .shot-frame .placeholder{
+    display:flex; align-items:center; justify-content:center; text-align:center; padding:30px;
+    background:linear-gradient(135deg,var(--navy-2),#dfe8fb);
+    color:var(--muted); font-size:.95rem; font-weight:600;
+  }
+
+  /* IMPACT */
+  .stats{display:grid; grid-template-columns:repeat(4,1fr); gap:22px; width:100%;}
+  @media (max-width:900px){.stats{grid-template-columns:repeat(2,1fr);}}
+  .stat{
+    background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:26px 18px; text-align:center;
+    box-shadow:0 10px 26px rgba(10,30,80,.06);
+  }
+  .stat .n{font-size:2.2rem; font-weight:800; color:var(--gold);}
+  .stat .l{font-size:.8rem; color:var(--muted); margin-top:6px; letter-spacing:.5px;}
+
+  /* TEAM */
+  .team-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:20px; width:100%;}
+  @media (max-width:900px){.team-grid{grid-template-columns:repeat(2,1fr);}}
+  @media (max-width:560px){.team-grid{grid-template-columns:1fr;}}
+  .member{
+    background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:22px; text-align:center;
+    box-shadow:0 10px 26px rgba(10,30,80,.06);
+  }
+  .avatar{
+    width:56px; height:56px; border-radius:50%; margin:0 auto 12px;
+    background:linear-gradient(135deg,var(--sap-blue),var(--joule));
+    display:flex; align-items:center; justify-content:center; font-weight:800; font-size:18px;
+  }
+  .member .name{font-weight:700; font-size:.98rem;}
+  .member .role{font-size:.78rem; color:var(--muted); margin-top:4px; letter-spacing:.5px; text-transform:uppercase;}
+  .tagline-band{
+    margin-top:40px; text-align:center; font-size:1.1rem; color:var(--muted); font-style:italic;
+  }
+
+  /* Q&A */
+  .qa-mark{
+    width:84px; height:84px; margin:0 auto 24px; border-radius:24px;
+    background:linear-gradient(135deg,var(--sap-blue),var(--joule) 65%, var(--joule-2));
+    display:flex; align-items:center; justify-content:center;
+    font-size:2.6rem; font-weight:800; color:#fff;
+    box-shadow:0 20px 40px rgba(79,70,229,.35);
+  }
+
+  /* CLOSING */
+  #closing{background:radial-gradient(circle at 80% 20%, rgba(228,236,251,.65) 0%, transparent 62%); text-align:center;}
+  #closing h2{font-size:clamp(2.2rem,5vw,3.6rem);}
+  .cta-row{display:flex; gap:18px; justify-content:center; margin-top:20px; flex-wrap:wrap;}
+  .btn{
+    padding:14px 28px; border-radius:12px; font-weight:700; font-size:.95rem; text-decoration:none;
+    border:1px solid var(--line); color:var(--text);
+  }
+  .btn.primary{background:linear-gradient(90deg,var(--sap-blue),var(--joule)); border:none;}
+  .stack-grid.four{grid-template-columns:repeat(4,1fr);}
+  @media (max-width:1100px){.stack-grid.four{grid-template-columns:repeat(2,1fr);}}
+  @media (max-width:640px){.stack-grid.four{grid-template-columns:1fr;}}
+
+  /* SCROLL REVEAL ANIMATIONS */
+  .reveal{opacity:0; transform:translateY(46px); transition:opacity .8s cubic-bezier(.16,.8,.3,1), transform .8s cubic-bezier(.16,.8,.3,1);}
+  .reveal.visible{opacity:1; transform:translateY(0);}
+  .reveal-stagger > *{opacity:0; transform:translateY(34px) scale(.98); transition:opacity .6s ease, transform .6s ease;}
+  .reveal-stagger.visible > *{opacity:1; transform:translateY(0) scale(1);}
+  .reveal-stagger.visible > *:nth-child(1){transition-delay:.05s;}
+  .reveal-stagger.visible > *:nth-child(2){transition-delay:.15s;}
+  .reveal-stagger.visible > *:nth-child(3){transition-delay:.25s;}
+  .reveal-stagger.visible > *:nth-child(4){transition-delay:.35s;}
+  .reveal-stagger.visible > *:nth-child(5){transition-delay:.45s;}
+  .reveal-stagger.visible > *:nth-child(6){transition-delay:.55s;}
+  .reveal-stagger.visible > *:nth-child(7){transition-delay:.65s;}
+
+  @keyframes floatGlow{0%,100%{transform:translate(0,0);}50%{transform:translate(20px,-24px);}}
+  .glow-blue{animation:floatGlow 12s ease-in-out infinite;}
+  .glow-purple{animation:floatGlow 14s ease-in-out infinite reverse;}
+  .glow-green{animation:floatGlow 10s ease-in-out infinite;}
+</style>
+</head>
+<body>
+
+<div class="brand-pattern p1" aria-hidden="true"></div>
+<div class="brand-pattern p2" aria-hidden="true"></div>
+<div class="brand-pattern p3" aria-hidden="true"></div>
+<div class="grain" aria-hidden="true"></div>
+<div class="progress-marker" id="progressMarker"><img src="srv/assets/logo/Vector.png" alt="One Vision"></div>
+<div id="sapFloat" class="sap-chip"><div class="mark"><img src="srv/assets/sap%20logo.webp" alt="SAP"></div><div class="label">Powered by SAP</div></div>
+<nav class="dots" id="dots">
+  <span class="dots-fill" id="dotsFill"></span>
+  <a href="#cover" data-label="Cover" class="active"></a>
+  <a href="#video" data-label="Video"></a>
+  <a href="#story" data-label="Story"></a>
+  <a href="#problem" data-label="Problem"></a>
+  <a href="#solution" data-label="Solution"></a>
+  <!-- <a href="#how" data-label="Algorithm"></a> -->
+  <a href="#architecture" data-label="Architecture"></a>
+  <a href="#stack" data-label="Tech Stack"></a>
+  <a href="#joule" data-label="Joule in Action"></a>
+  <a href="#sac" data-label="SAC Dashboard"></a>
+  <a href="#demo" data-label="Live Demo"></a>
+  <a href="#impact" data-label="Impact"></a>
+  <a href="#team" data-label="Team"></a>
+  <a href="#qa" data-label="Q&amp;A"></a>
+  <a href="#closing" data-label="Thank You"></a>
+</nav>
+
+<!-- COVER -->
+<section id="cover">
+  <div class="bg-glow"><span class="glow-blue"></span><span class="glow-purple"></span></div>
+  <div class="content reveal">
+    <div class="logo-mark">
+      <div class="logo-circle" id="logoCircle"><img src="srv/assets/preview-transparent.png" alt="One Vision logo" onerror="this.parentElement.style.display='none';"></div>
+      <div class="logo-text">ONE VISION<small>Different People, One Vision</small></div>
+    </div>
+    <div class="eyebrow">MDEP-CE Cohort 7 · Hackathon 2026</div>
+    <h1>The <span>Maintenance Order Assistant</span><br>for the modern industrial supervisor.</h1>
+    <p class="lead">An intelligent, AI-grounded CAP application that turns hundreds of maintenance orders into one clear answer: <strong>what to fix first.</strong></p>
+    <div class="sap-chip lg reveal-stamp" style="margin-top:28px;"><div class="mark"><img src="srv/assets/sap%20logo.webp" alt="SAP"></div><div class="label">Built on SAP Business Technology Platform</div></div>
+    <div class="cover-meta">
+      <div class="meta-item">
+        <div class="meta-icon m-team"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+        <div class="meta-text"><strong>Team</strong><span>One Vision</span></div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-icon m-built"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 2 7l10 5 10-5-10-5Z"/><path d="m2 17 10 5 10-5"/><path d="m2 12 10 5 10-5"/></svg></div>
+        <div class="meta-text"><strong>Built on</strong><span>SAP CAP · SAP Joule · SAP SAC</span></div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-icon m-domain"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8l-7 5V8l-7 5V4a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M17 18h1"/><path d="M12 18h1"/><path d="M7 18h1"/></svg></div>
+        <div class="meta-text"><strong>Domain</strong><span>Industrial Plant Maintenance</span></div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-icon m-org"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/></svg></div>
+        <div class="meta-text"><strong>Organized by</strong><span>SAP Institute for Product and Engineering</span></div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-icon m-date"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/></svg></div>
+        <div class="meta-text"><strong>Date</strong><span>August 2026</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="scroll-cue">Scroll to explore<div class="chevron">⌄</div></div>
+</section>
+
+<!-- VIDEO INTRO -->
+<section id="video">
+  <div class="content reveal">
+    <div class="eyebrow">Introduction</div>
+    <h2>Watch it <span>in one minute.</span></h2>
+    <div class="shot-frame" style="max-width:960px;">
+      <video controls style="width:100%; aspect-ratio:16/9; display:block; background:#000;">
+        <source src="srv/assets/video.mp4" type="video/mp4">
+      </video>
+    </div>
+  </div>
+</section>
+
+<!-- STORY -->
+<section id="story">
+  <div class="content reveal">
+    <div class="eyebrow">The Story</div>
+    <h2>It was 2:14 AM<br><span>when the wrong order got picked.</span></h2>
+    <div class="story-split">
+      <div class="story-card">
+        <p>Somewhere on the Gulf coast, a maintenance planner named Ahmed sat in front of a spreadsheet with <span class="story-highlight">200 open work orders</span>. Compressors, pumps, sensors, generators — every row looked urgent, because on paper, they all were.</p>
+        <p>He picked the top one. It turned out to be a routine filter change. Three floors down, a pressure sensor with a <span class="story-highlight">high safety risk</span> sat untouched for another six hours — because it was buried on page four, sorted by order number instead of by what actually mattered.</p>
+        <p>Nothing happened that night. But it easily could have. And across every plant powering Saudi Arabia's industrial ambitions, this exact moment repeats itself, shift after shift.</p>
+        <p><span class="story-highlight">That's the gap One Vision decided to close</span> — not with another dashboard full of numbers, but with an assistant that thinks like a safety-first engineer, scores every order in real time, and simply tells the supervisor: start here.</p>
+      </div>
+      <div class="console-frame" id="storyVisual">
+        <div class="console" id="consoleMockup">
+          <div class="console-clock">02:14<span class="ampm">AM</span></div>
+          <div class="console-sub">Shift Control · Open Orders Queue</div>
+          <div class="console-row alert"><span style="display:flex;align-items:center;gap:8px;"><span class="dot"></span>EQ-1004 · Pressure Sensor</span><span class="tag">SAFETY: HIGH</span></div>
+          <div class="console-row"><span>EQ-1000 · Compressor Unit</span><span class="tag muted">Routine</span></div>
+          <div class="console-row"><span>EQ-1002 · Backup Generator</span><span class="tag muted">Routine</span></div>
+          <div class="console-row"><span>EQ-1008 · Control Panel</span><span class="tag muted">Routine</span></div>
+          <div class="console-footer">Order 187 of 200 · Sorted by Order Number, Not Urgency</div>
+        </div>
+        <!-- Optional: drop a real clip at srv/assets/story.mp4 - it silently takes over once it proves it can actually play -->
+        <video muted loop playsinline style="display:none;" onloadeddata="this.style.display='block'; document.getElementById('consoleMockup').style.display='none'; this.play();">
+          <source src="srv/assets/story.mp4" type="video/mp4">
+        </video>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROBLEM -->
+<section id="problem">
+  <div class="content reveal">
+    <div class="eyebrow">The Problem</div>
+    <h2>Prioritization is still a <span>manual, risky guess.</span></h2>
+    <div class="split reveal-stagger">
+      <div class="card">
+        <div class="icon-chip chip-danger">⚠️</div>
+        <h3>Safety hides in the noise</h3>
+        <p>High-safety-risk orders don't stand out in a flat list — they're one row among hundreds, easy to miss under time pressure.</p>
+      </div>
+      <div class="card">
+        <div class="icon-chip chip-gold">⏱️</div>
+        <h3>Every minute has a cost</h3>
+        <p>Downtime hours, cost-per-hour, and production impact all matter — but no one has time to mentally weigh three factors per order, 200 times a shift.</p>
+      </div>
+      <div class="card">
+        <div class="icon-chip chip-blue">📋</div>
+        <h3>Spreadsheets don't reason</h3>
+        <p>Sorting by date or order number tells you nothing about urgency. Supervisors need judgment, not just a list.</p>
+      </div>
+      <div class="card">
+        <div class="icon-chip chip-purple">🗣️</div>
+        <h3>No natural way to ask</h3>
+        <p>"What should my team tackle first, and why?" is a simple question — but no system could answer it in plain language, until now.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SOLUTION -->
+<section id="solution">
+  <div class="content reveal">
+    <div class="eyebrow">The Solution</div>
+    <h2>One Source of truth. One ranked list.<br><span>Zero guesswork.</span></h2>
+    <p class="lead">Our solution brings maintenance priorities into one clear view. Every order is evaluated based on safety risk, equipment criticality, and production impact, then automatically ranked so supervisors know what needs attention first. Joule makes decisions even easier by explaining priorities and answering questions in natural language, while SAP SAC provides a high-level view for decision-makers.</p>
+    <div class="pill-row reveal-stagger">
+      <div class="pill">🟢 Automatic Prioritization</div>
+      <div class="pill">🟣 Clear Ranked Action List</div>
+      <div class="pill">🔵 AI Guidance with Joule</div>
+      <div class="pill">🟡 Executive Insights in SAP SAC</div>
+    </div>
+  </div>
+</section>
+
+
+
+
+<!-- ARCHITECTURE -->
+<section id="architecture">
+  <div class="content reveal">
+    <div class="eyebrow">Architecture</div>
+    <h2>From raw orders to a <span>live, conversational ranking.</span></h2>
+    <p class="lead" style="margin-bottom:28px;">Maintenance orders flow into the SAP CAP service, which exposes a clean OData API. A Joule agent reads and reasons over that data, while a BDC/SAC-style dashboard visualizes the live, ranked queue for the supervisor.</p>
+    <div class="arch-frame">
+      <img src="srv/assets/architecture_end_to_end_2.png" alt="One Vision end-to-end architecture: Maintenance Orders → SAP CAP service → Joule agent → SAP BDC/SAC dashboard → Maintenance supervisor">
+    </div>
+  </div>
+</section>
+
+<!-- TECH STACK -->
+<section id="stack">
+  <div class="content reveal">
+    <div class="eyebrow">Tech Stack</div>
+    <h2>Built entirely on <span>SAP's Business Technology Platform.</span></h2>
+    <div class="sap-chip" style="margin-bottom:30px;"><div class="mark">SAP</div><div class="label">One integrated platform, three SAP services</div></div>
+    <div class="stack-grid four reveal-stagger">
+      <div class="stack-card stack-btp">
+        <div class="svc-icon svc-btp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 2 7l10 5 10-5-10-5Z"/><path d="m2 17 10 5 10-5"/><path d="m2 12 10 5 10-5"/></svg></div>
+        <h3>SAP BTP</h3>
+        <p>SAP Business Technology Platform is the foundation: hosting, security, and the connective layer that lets CAP, Joule and SAC work together as one solution.</p>
+        <span class="stack-tag tag-btp">Platform Foundation</span>
+      </div>
+      <div class="stack-card stack-cap">
+        <div class="svc-icon svc-cap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 6-6 6 6 6"/><path d="m16 6 6 6-6 6"/></svg></div>
+        <h3>SAP CAP</h3>
+        <p>The Cloud Application Programming Model powers the core service: a CDS data model, an OData API, and server-side business logic that computes priority on every create/update.</p>
+        <span class="stack-tag tag-cap">Core Service Layer</span>
+      </div>
+      <div class="stack-card stack-joule">
+        <div class="svc-icon svc-joule"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12l4 6-10 12L2 9Z"/><path d="M11 3 8 9l4 12 4-12-3-6"/><path d="M2 9h20"/></svg></div>
+        <h3>SAP Joule</h3>
+        <p>SAP's AI copilot connects to the CAP service, letting supervisors ask anything in natural language and get a grounded, explained answer.</p>
+        <span class="stack-tag tag-joule">Conversational AI Layer</span>
+      </div>
+      <div class="stack-card stack-sac">
+        <div class="svc-icon svc-sac"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><rect x="7" y="12" width="3" height="6"/><rect x="12" y="8" width="3" height="10"/><rect x="17" y="5" width="3" height="13"/></svg></div>
+        <h3>SAP SAC</h3>
+        <p>SAP Analytics Cloud turns the ranked, live order queue into visual, at-a-glance dashboards for supervisors and plant managers — no spreadsheets required.</p>
+        <span class="stack-tag tag-sac">Visualization Layer</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- JOULE IN ACTION -->
+<section id="joule">
+  <div class="content reveal">
+    <div class="eyebrow">Joule in Action</div>
+    <h2>Ask a question. <span>Get a ranked, explained answer.</span></h2>
+    <p class="lead" style="margin-bottom:28px;">Instead of scrolling through 200 rows, the supervisor simply asks Joule what matters most — and receives a grounded, reasoned answer pulled straight from the live CAP data.</p>
+    <div class="shot-frame">
+      <img src="srv/assets/answer1.png" alt="Joule answering: What are the top 5 maintenance orders that should be prioritized and why">
+    </div>
+  </div>
+</section>
+
+<!-- SAC DASHBOARD -->
+<section id="sac">
+  <div class="content reveal">
+    <div class="eyebrow">SAC Dashboard</div>
+    <h2>Every KPI a supervisor needs,<br><span>in a single glance.</span></h2>
+    <p class="lead" style="margin-bottom:28px;">Behind every ranked order sits a live SAP Analytics Cloud dashboard, purpose-built for the maintenance supervisor's morning briefing — not another generic report buried with noise. Open vs. Urgent orders, average priority score by plant, safety-risk trend over time, and total downtime cost exposure surface instantly, so the first five minutes of every shift start with clarity instead of a spreadsheet hunt.</p>
+    <div class="pill-row reveal-stagger" style="margin-bottom:28px;">
+      <div class="pill">📊 Open vs. Urgent Orders</div>
+      <div class="pill">🏭 Avg. Priority Score by Plant</div>
+      <div class="pill">⚠️ Safety-Risk Trend</div>
+      <div class="pill">💰 Downtime Cost Exposure</div>
+    </div>
+    <div class="shot-frame">
+      <!-- Replace with your SAC dashboard screenshot, e.g. srv/assets/dashboard.png -->
+      <img src="srv/assets/dashboard.png" alt="SAP Analytics Cloud dashboard showing open vs urgent maintenance orders, priority score by plant, safety-risk trend and downtime cost exposure" onerror="this.parentElement.innerHTML='&lt;div class=&quot;placeholder&quot; style=&quot;aspect-ratio:16/9;border-radius:18px;&quot;&gt;&lt;div&gt;Drop your SAC dashboard screenshot into srv/assets/dashboard.png&lt;/div&gt;&lt;/div&gt;';">
+    </div>
+    <p class="demo-caption">One live view for the whole shift: what's open, what's urgent, and where the cost is piling up.</p>
+  </div>
+</section>
+
+<!-- DEMO -->
+<section id="demo">
+  <div class="content reveal">
+    <div class="eyebrow">Live Demo</div>
+    <h2>See it <span>in action.</span></h2>
+    <div class="laptop" onclick="window.open('portal.html','_blank')" style="cursor:pointer;" title="Open the Supervisor Portal in a new tab">
+      <div class="lid">
+        <div class="cam"></div>
+        <div class="screen">
+          <iframe src="portal.html" title="One Vision Supervisor Portal" style="width:100%;height:100%;border:0;display:block;"></iframe>
+        </div>
+        <div class="brand-etch">One Vision</div>
+      </div>
+      <div class="hinge"></div>
+      <div class="keyboard-deck"><div class="trackpad"></div></div>
+      <div class="laptop-shadow"></div>
+    </div>
+    <p class="demo-caption">A real supervisor portal: one click to ask Joule, one click to open the live SAC dashboard. Click the laptop to open it in a new tab.</p>
+  </div>
+</section>
+
+<!-- IMPACT -->
+<section id="impact">
+  <div class="content reveal">
+    <div class="eyebrow">Impact</div>
+    <h2>Small change in workflow.<br><span>Big change in outcomes.</span></h2>
+    <div class="stats reveal-stagger">
+      <div class="stat"><div class="n">100%</div><div class="l">Safety-critical orders auto-flagged Urgent</div></div>
+      <div class="stat"><div class="n">3 factors</div><div class="l">Safety Risk · Equipment Criticality · Production Impact</div></div>
+      <div class="stat"><div class="n">Seconds</div><div class="l">To get a ranked, explained answer via Joule</div></div>
+      <div class="stat"><div class="n">0</div><div class="l">Spreadsheets needed to decide what's next</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- TEAM -->
+<section id="team">
+  <div class="content reveal">
+    <div class="eyebrow">The Team</div>
+    <div class="logo-circle xl" id="logoCircleTeam"><img src="srv/assets/preview-transparent.png" alt="One Vision logo" onerror="this.parentElement.style.display='none';"></div>
+    <h2>Meet <span>One Vision.</span></h2>
+    <div class="team-grid reveal-stagger">
+      <div class="member"><div class="avatar">HA</div><div class="name">Haneen Hamad S. Alhonayan</div></div>
+      <div class="member"><div class="avatar">AA</div><div class="name">Ahmed Abdulrahman Abdulaziz Alfadhel</div></div>
+      <div class="member"><div class="avatar">EA</div><div class="name">Eyed Mahdi AlQarni</div></div>
+      <div class="member"><div class="avatar">FB</div><div class="name">Faisal Ghazi Basiouni</div></div>
+      <div class="member"><div class="avatar">LA</div><div class="name">Latifa Salem Almutairi</div></div>
+      <div class="member"><div class="avatar">MF</div><div class="name">Mohamed Adel Faried</div></div>
+      <div class="member"><div class="avatar">SA</div><div class="name">Saleh Abdulaziz Alneghamshi</div></div>
+    </div>
+    <div class="tagline-band">"Different people, one vision."</div>
+  </div>
+</section>
+
+<!-- Q&A -->
+<section id="qa">
+  <div class="bg-glow"><span class="glow-blue" style="top:10%; right:-10%; left:auto;"></span><span class="glow-purple" style="bottom:-10%; left:-10%; right:auto;"></span></div>
+  <div class="content reveal" style="text-align:center;">
+    <div class="qa-mark">?</div>
+    <div class="eyebrow" style="justify-content:center;">Q&amp;A</div>
+    <h2>Questions? <span>Let's talk about it.</span></h2>
+    <p class="lead" style="margin:0 auto 28px;">Ask us anything — from the scoring algorithm to how Joule and SAC connect to the CAP service.</p>
+    <div class="pill-row" style="justify-content:center; margin-top:0;">
+      <div class="pill">⚖️ Scoring Algorithm</div>
+      <div class="pill">🤖 Joule Integration</div>
+      <div class="pill">📊 SAC Dashboard</div>
+      <div class="pill">🏗️ CAP Architecture</div>
+      <div class="pill">🚀 Deployment on BTP</div>
+    </div>
+  </div>
+</section>
+
+<!-- CLOSING -->
+<section id="closing">
+  <div class="bg-glow"><span class="glow-blue" style="top:20%; left:10%;"></span><span class="glow-purple"></span></div>
+  <div class="content reveal">
+    <div class="eyebrow" style="justify-content:center;">MDEP-CE Cohort 7 · Hackathon 2026</div>
+    <h2>Turning maintenance chaos<br>into <span>one clear vision.</span></h2>
+    <p class="lead" style="margin:0 auto 10px;">One Vision — powered by SAP CAP, SAP Joule and SAP SAC.</p>
+    <div class="sap-chip lg reveal-stamp" style="margin:20px auto 6px;"><div class="mark"><img src="srv/assets/sap%20logo.webp" alt="SAP"></div><div class="label">SAP Institute for Product and Engineering · August 2026</div></div>
+    <div class="cta-row">
+      <a class="btn primary" href="#cover">Restart Presentation</a>
+      <a class="btn" href="#demo">Watch the Demo</a>
+    </div>
+  </div>
+</section>
+
+<script>
+  const sections = Array.from(document.querySelectorAll('section'));
+  const dots = Array.from(document.querySelectorAll('#dots a'));
+  const dotsNav = document.getElementById('dots');
+  const dotsFill = document.getElementById('dotsFill');
+
+  const sapFloat = document.getElementById('sapFloat');
+  const progressMarker = document.getElementById('progressMarker');
+  function onScroll(){
+    const scrollTop = window.scrollY;
+    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const pct = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+
+    const navRect = dotsNav.getBoundingClientRect();
+    dotsFill.style.height = pct + '%';
+    progressMarker.style.top = (navRect.top + (pct / 100) * navRect.height) + 'px';
+    progressMarker.style.left = (navRect.left + navRect.width / 2) + 'px';
+    progressMarker.classList.toggle('show', scrollTop > 40);
+    sapFloat.classList.toggle('show', scrollTop > window.innerHeight * 0.6);
+
+    let currentIndex = 0;
+    sections.forEach((sec, i) => {
+      if (scrollTop >= sec.offsetTop - window.innerHeight * 0.5) currentIndex = i;
+    });
+    dots.forEach((d, i) => d.classList.toggle('active', i === currentIndex));
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', onScroll, { passive: true });
+  onScroll();
+
+
+  const revealObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) entry.target.classList.add('visible');
+    });
+  }, { threshold: 0.2 });
+  document.querySelectorAll('.reveal, .reveal-stagger, .reveal-stamp').forEach(el => revealObserver.observe(el));
+</script>
+</body>
+</html>

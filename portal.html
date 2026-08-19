@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>One Vision | Supervisor Portal</title>
+<style>
+  :root{
+    --sap-blue:#0070f2;
+    --sap-blue-dark:#0050a0;
+    --joule:#4f46e5;
+    --sac:#0284c7;
+    --border:#d9d9d9;
+    --text:#1d2d3e;
+    --muted:#6a6d70;
+    --bg:#f7f7f7;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; min-height:100vh; background:var(--bg); color:var(--text);
+    font-family:"72","72full",Arial,Helvetica,sans-serif;
+  }
+
+  /* Shell bar - SAP Fiori style */
+  .shell{
+    background:#fff; border-bottom:1px solid var(--border);
+    display:flex; align-items:center; gap:20px; padding:0 24px; height:56px;
+  }
+  .shell .sap-mark{
+    width:34px; height:34px; border-radius:3px; background:#fff;
+    display:flex; align-items:center; justify-content:center; flex-shrink:0; overflow:hidden;
+  }
+  .shell .sap-mark img{width:100%; height:100%; object-fit:contain;}
+  .shell .app-name{font-weight:700; font-size:15px; color:var(--text); white-space:nowrap;}
+  .shell nav{display:flex; gap:22px; margin-left:8px; flex:1; overflow:hidden;}
+  .shell nav a{color:var(--muted); text-decoration:none; font-size:13.5px; white-space:nowrap;}
+  .shell nav a:hover{color:var(--sap-blue);}
+  .shell .utilities{display:flex; align-items:center; gap:16px; flex-shrink:0;}
+  .shell .icon-btn{
+    width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    color:var(--muted); background:transparent;
+  }
+  .shell .icon-btn svg{width:17px; height:17px;}
+  .avatar-icon{
+    width:28px; height:28px; border-radius:50%; background:#e8e8e8; color:var(--muted);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .avatar-icon svg{width:16px; height:16px;}
+
+  /* Breadcrumb */
+  .crumb{
+    padding:10px 24px; font-size:12.5px; color:var(--muted); background:#fff; border-bottom:1px solid var(--border);
+  }
+  .crumb a{color:var(--muted); text-decoration:none;}
+  .crumb a:hover{color:var(--sap-blue);}
+  .crumb .sep{margin:0 6px; color:#b7b9bb;}
+
+  /* Main content */
+  main{max-width:1160px; margin:0 auto; padding:32px 24px 48px;}
+
+  .page-title{font-size:1.9rem; font-weight:700; color:var(--text); margin:0 0 10px; line-height:1.25;}
+  .page-sub{color:var(--muted); font-size:14.5px; margin:0 0 22px; max-width:680px; line-height:1.6;}
+
+  .tag-row{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:34px;}
+  .tag{
+    padding:5px 12px; border:1px solid var(--border); border-radius:16px;
+    font-size:12px; color:var(--text); background:#fafafa;
+  }
+
+  .section-label{
+    font-size:11px; font-weight:700; letter-spacing:1px; text-transform:uppercase;
+    color:var(--muted); margin:0 0 14px;
+  }
+
+  /* Fiori-tile style cards */
+  .tiles{display:grid; grid-template-columns:1fr 1fr; gap:20px;}
+  @media (max-width:680px){.tiles{grid-template-columns:1fr;}}
+
+  .tile{
+    display:block; text-decoration:none; color:inherit;
+    background:#fff; border:1px solid var(--border); border-radius:8px; padding:22px;
+    transition:box-shadow .15s ease, border-color .15s ease;
+  }
+  .tile:hover{box-shadow:0 4px 16px rgba(0,0,0,.10); border-color:#bfc1c3;}
+
+  .tile-top{display:flex; align-items:center; gap:12px; margin-bottom:14px;}
+  .tile-icon{
+    width:40px; height:40px; border-radius:6px; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .tile-icon svg{width:21px; height:21px;}
+  .tile.joule .tile-icon{background:rgba(79,70,229,.10); color:var(--joule);}
+  .tile.sac .tile-icon{background:rgba(2,132,199,.10); color:var(--sac);}
+
+  .tile h2{font-size:16px; font-weight:700; margin:0;}
+  .tile p{color:var(--muted); font-size:13px; line-height:1.6; margin:0 0 16px;}
+
+  .tile-link{
+    display:inline-flex; align-items:center; gap:6px;
+    font-size:13px; font-weight:700; color:var(--sap-blue);
+  }
+  .tile.joule .tile-link{color:var(--joule);}
+  .tile.sac .tile-link{color:var(--sac);}
+
+  footer{
+    border-top:1px solid var(--border); margin-top:40px; padding:18px 24px;
+    font-size:11.5px; color:var(--muted); text-align:center;
+  }
+</style>
+</head>
+<body>
+
+  <div class="shell">
+    <a class="sap-mark" href="https://www.sap.com" target="_blank" rel="noopener" title="SAP"><img src="srv/assets/sap%20logo.webp" alt="SAP"></a>
+    <div class="app-name">One Vision</div>
+    <nav>
+      <a href="#">Overview</a>
+      <a href="#">Maintenance Orders</a>
+      <a href="#">Joule</a>
+      <a href="#">SAC Dashboard</a>
+      <a href="#">Help Center</a>
+    </nav>
+    <div class="utilities">
+      <div class="icon-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg></div>
+      <div class="avatar-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+    </div>
+  </div>
+
+  <div class="crumb">
+    <a href="#">One Vision</a><span class="sep">/</span><a href="#">Maintenance Order Assistant</a><span class="sep">/</span>Supervisor Portal
+  </div>
+
+  <main>
+    <h1 class="page-title">Welcome back, Supervisor</h1>
+    <p class="page-sub">Your shift starts here. Ask Joule what needs attention first, or open the live SAC dashboard for the full picture — no spreadsheets required.</p>
+
+    <div class="tag-row">
+      <span class="tag">SAP CAP</span>
+      <span class="tag">SAP Joule</span>
+      <span class="tag">SAP SAC</span>
+      <span class="tag">SAP BTP</span>
+      <span class="tag">Maintenance Orders</span>
+    </div>
+
+    <div class="section-label">Quick Actions</div>
+    <div class="tiles">
+      <a class="tile joule" href="https://mdep-dev-e7theu7n.us10.sapdas.cloud.sap/webclient/standalone/da_testteam" target="_blank" rel="noopener">
+        <div class="tile-top">
+          <div class="tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12l4 6-10 12L2 9Z"/><path d="M11 3 8 9l4 12 4-12-3-6"/><path d="M2 9h20"/></svg></div>
+          <h2>Ask Joule</h2>
+        </div>
+        <p>Ask anything about today's maintenance orders in plain language — "what's most urgent?", "why is this one flagged?" — and get a grounded, explained answer instantly.</p>
+        <span class="tile-link">Open Joule →</span>
+      </a>
+
+      <a class="tile sac" href="https://trial-bdc-analytics-us10.us10.analytics.cloud.sap/sap/fpa/ui/app.html#/story2&/s2/EBD6FF5B298243429D572A4901B2FC86/?mode=present" target="_blank" rel="noopener">
+        <div class="tile-top">
+          <div class="tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><rect x="7" y="12" width="3" height="6"/><rect x="12" y="8" width="3" height="10"/><rect x="17" y="5" width="3" height="13"/></svg></div>
+          <h2>SAC Dashboard</h2>
+        </div>
+        <p>See open vs. urgent orders, priority score by plant, safety-risk trend, and downtime cost exposure — one live view for the whole shift.</p>
+        <span class="tile-link">Open Dashboard →</span>
+      </a>
+    </div>
+  </main>
+
+  <footer>Powered by SAP Business Technology Platform · SAP CAP · SAP Joule · SAP SAC</footer>
+
+</body>
+</html>
