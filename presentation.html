@@ -507,6 +507,21 @@
   @media (max-width:1100px){.stack-grid.four{grid-template-columns:repeat(2,1fr);}}
   @media (max-width:640px){.stack-grid.four{grid-template-columns:1fr;}}
 
+  /* QR CODE CARD */
+  .qr-card{
+    display:inline-flex; align-items:center; gap:18px; margin:30px auto 0; padding:16px 24px 16px 16px;
+    background:#fff; border:1px solid var(--line); border-radius:18px; box-shadow:0 16px 38px rgba(10,30,80,.12);
+    text-align:left;
+  }
+  .qr-card .qr-frame{
+    width:112px; height:112px; border-radius:10px; padding:6px; background:#fff;
+    border:1px solid var(--line); flex-shrink:0;
+  }
+  .qr-card .qr-frame img{width:100%; height:100%; display:block; border-radius:4px;}
+  .qr-card .qr-copy strong{display:block; font-size:.98rem; font-weight:800; color:var(--text); margin-bottom:4px;}
+  .qr-card .qr-copy span{display:block; font-size:.78rem; color:var(--muted); line-height:1.5; max-width:230px;}
+  .qr-card .qr-copy .qr-url{color:var(--sap-blue-dark); font-weight:700; word-break:break-all; margin-top:6px; font-size:.72rem;}
+
   /* SCROLL REVEAL ANIMATIONS */
   .reveal{opacity:0; transform:translateY(46px); transition:opacity .8s cubic-bezier(.16,.8,.3,1), transform .8s cubic-bezier(.16,.8,.3,1);}
   .reveal.visible{opacity:1; transform:translateY(0);}
@@ -842,6 +857,14 @@
     <h2>Turning maintenance chaos<br>into <span>one clear vision.</span></h2>
     <p class="lead" style="margin:0 auto 10px;">One Vision — powered by SAP CAP, SAP Joule and SAP SAC.</p>
     <div class="sap-chip lg reveal-stamp" style="margin:20px auto 6px;"><div class="mark"><img src="srv/assets/sap%20logo.webp" alt="SAP"></div><div class="label">SAP Institute for Product and Engineering · August 2026</div></div>
+    <div class="qr-card">
+      <div class="qr-frame"><img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&margin=0&data=https%3A%2F%2Fhaneendev.github.io%2Fone-vision-maintenance-order-assistant%2Fpresentation.html" alt="QR code to open the One Vision app" loading="lazy"></div>
+      <div class="qr-copy">
+        <strong>Scan to try it live</strong>
+        <span>Open the full presentation and the Supervisor Portal demo on your own phone.</span>
+        <div class="qr-url">haneendev.github.io/one-vision-maintenance-order-assistant</div>
+      </div>
+    </div>
     <div class="cta-row">
       <a class="btn primary" href="#cover">Restart Presentation</a>
       <a class="btn" href="#demo">Watch the Demo</a>
