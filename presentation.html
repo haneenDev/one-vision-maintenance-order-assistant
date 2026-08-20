@@ -886,6 +886,17 @@
     });
   }, { threshold: 0.2 });
   document.querySelectorAll('.reveal, .reveal-stagger, .reveal-stamp').forEach(el => revealObserver.observe(el));
+
+  // Enter key advances to the next slide/section
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter') return;
+    const tag = (e.target.tagName || '').toLowerCase();
+    if (tag === 'input' || tag === 'textarea' || e.target.isContentEditable) return;
+    e.preventDefault();
+    const scrollTop = window.scrollY;
+    const next = sections.find(sec => sec.offsetTop > scrollTop + 10);
+    if (next) next.scrollIntoView({ behavior: 'smooth' });
+  });
 </script>
 </body>
 </html>
